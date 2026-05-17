@@ -2,6 +2,7 @@
 
 import { ChevronDownIcon, ExternalLinkIcon, Share2Icon } from "lucide-react"
 import { useMemo, useState } from "react"
+import posthog from "posthog-js"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -127,6 +128,12 @@ export function CoursePicker({ className }: { className?: string }) {
                       key={c.code}
                       value={`${c.code} ${c.title}`}
                       onSelect={() => {
+                        posthog.capture("course_selected", {
+                          course_code: c.code,
+                          course_title: c.title,
+                          course_type: c.type,
+                          credit_points: c.creditPoints,
+                        })
                         void switchCourse(c.code)
                         setOpen(false)
                       }}

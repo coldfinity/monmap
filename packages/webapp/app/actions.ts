@@ -1,6 +1,7 @@
 "use server"
 
 import { getCurrentUser } from "@/lib/auth-server"
+import { getPostHogClient } from "@/lib/posthog-server"
 import {
   bulkUpsertUserGrades,
   createUserPlan,
@@ -251,6 +252,13 @@ export async function createBlankPlanAction(
   const name = requestedName ? requestedName.slice(0, 80) : "Default plan"
   const state = defaultState(year, null, 3)
   const plan = await createUserPlan(u.id, name, state)
+  const posthog = getPostHogClient()
+  posthog.capture({
+    distinctId: u.id,
+    event: "plan_created_server",
+    properties: { plan_name: name, handbook_year: year },
+  })
+  await posthog.flush()
   redirect(`/?plan=${plan.id}`)
 }
 

@@ -8,6 +8,7 @@ import {
   XIcon,
 } from "lucide-react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import posthog from "posthog-js"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -256,7 +257,17 @@ export function UnitCard({
         <UnitMenu
           open={menuOpen}
           onOpenChange={setMenuOpen}
-          onRemove={() => removeUnit(yearIndex, slotIndex, code)}
+          onRemove={() => {
+            posthog.capture("unit_removed", {
+              unit_code: code,
+              unit_title: unit?.title,
+              credit_points: unit?.creditPoints,
+              year_index: yearIndex,
+              slot_index: slotIndex,
+              had_validation_error: status === "error",
+            })
+            removeUnit(yearIndex, slotIndex, code)
+          }}
         />
       )}
     </div>

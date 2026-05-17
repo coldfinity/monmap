@@ -2,6 +2,7 @@
 
 import { SearchIcon } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import posthog from "posthog-js"
 
 import { searchUnitsAction } from "@/app/actions"
 import {
@@ -86,6 +87,8 @@ export function UnitSearchDialog({
   useEffect(() => {
     let cancelled = false
     if (!debounced.trim()) {
+      // Empty query — clear cached results.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults([])
       setLoading(false)
       return
@@ -110,6 +113,9 @@ export function UnitSearchDialog({
 
   useEffect(() => {
     if (!open) {
+      // Resetting on close — the dialog's open state is an external
+      // input we sync our cached query/results to.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery("")
       setResults([])
       setFocusIndex(0)
@@ -119,15 +125,27 @@ export function UnitSearchDialog({
   const items = debounced.trim() ? results : suggestions
 
   useEffect(() => {
+    // Keep focus in range when the items list shrinks.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (focusIndex >= items.length) setFocusIndex(Math.max(0, items.length - 1))
   }, [items.length, focusIndex])
 
   const addAndClose = useCallback(
     (code: string) => {
+      const unit = units.get(code)
+      posthog.capture("unit_added", {
+        unit_code: code,
+        unit_title: unit?.title,
+        credit_points: unit?.creditPoints,
+        year_index: yearIndex,
+        slot_index: slotIndex,
+        slot_kind: slotKind,
+        from_search: !!debounced.trim(),
+      })
       addUnit(yearIndex, slotIndex, code)
       onOpenChange(false)
     },
-    [addUnit, yearIndex, slotIndex, onOpenChange]
+    [addUnit, yearIndex, slotIndex, slotKind, debounced, units, onOpenChange]
   )
 
   return (
@@ -175,7 +193,7 @@ export function UnitSearchDialog({
           ) : null}
           {debounced.trim() && !loading && results.length === 0 ? (
             <div className="py-10 text-center text-sm text-muted-foreground">
-              No matches for "{debounced}"
+              No matches for &ldquo;{debounced}&rdquo;
             </div>
           ) : null}
 

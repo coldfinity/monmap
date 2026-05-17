@@ -2,6 +2,7 @@
 
 import { ExternalLinkIcon, XIcon } from "lucide-react"
 import { useMemo } from "react"
+import posthog from "posthog-js"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -40,9 +41,19 @@ export function AoSPicker() {
           options={role.options}
           current={state.selectedAos[role.role]}
           year={course.year}
-          onChange={(code) =>
+          onChange={(code) => {
+            if (code) {
+              const selected = role.options.find((o) => o.code === code)
+              posthog.capture("area_of_study_selected", {
+                aos_code: code,
+                aos_title: selected?.title,
+                aos_kind: role.kind,
+                aos_role: role.role,
+                course_code: course.code,
+              })
+            }
             dispatch({ type: "set_aos", role: role.role, code })
-          }
+          }}
         />
       ))}
     </div>
@@ -161,7 +172,7 @@ function RoleSelect({
             onChange(typeof v === "string" && v !== "" ? v : null)
           }
         >
-          <SelectTrigger className="min-w-0 flex-1 items-center py-2.5 text-xs [&>span]:flex [&>span]:min-w-0 [&>span]:flex-1 [&>span]:items-baseline [&>span]:gap-2 [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:truncate">
+          <SelectTrigger className="min-w-0 flex-1 items-center py-2.5 text-xs [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:truncate [&>span]:flex [&>span]:min-w-0 [&>span]:flex-1 [&>span]:items-baseline [&>span]:gap-2">
             <SelectValue placeholder="Select…">
               {current
                 ? (() => {
@@ -174,7 +185,9 @@ function RoleSelect({
                             {sel.code}
                           </span>
                         )}
-                        <span className="min-w-0 flex-1 truncate">{sel.title}</span>
+                        <span className="min-w-0 flex-1 truncate">
+                          {sel.title}
+                        </span>
                       </>
                     )
                   })()

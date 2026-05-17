@@ -13,11 +13,11 @@
 
 export interface FacultyStyle {
   /** Short text shown vertically on the rail (the prefix itself). */
-  label: string;
+  label: string
   /** Tailwind utility class for the rail background. */
-  railClass: string;
+  railClass: string
   /** Tailwind utility class for the rail text (on top of bg). */
-  railTextClass: string;
+  railTextClass: string
 }
 
 const FALLBACK_PALETTE: { bg: string; text: string }[] = [
@@ -29,7 +29,7 @@ const FALLBACK_PALETTE: { bg: string; text: string }[] = [
   { bg: "bg-fuchsia-500", text: "text-white" },
   { bg: "bg-lime-600", text: "text-white" },
   { bg: "bg-slate-500", text: "text-white" },
-];
+]
 
 /** Hand-picked mappings, mostly lifted from Monash's own faculty palette. */
 const KNOWN: Record<string, { bg: string; text: string }> = {
@@ -72,21 +72,21 @@ const KNOWN: Record<string, { bg: string; text: string }> = {
   ARC: { bg: "bg-amber-600", text: "text-white" }, // Art, Design, Architecture
   DES: { bg: "bg-amber-600", text: "text-white" },
   IND: { bg: "bg-amber-600", text: "text-white" },
-};
+}
 
 export function facultyStyle(code: string): FacultyStyle {
-  const prefix = code.slice(0, 3).toUpperCase();
-  const hit = KNOWN[prefix];
+  const prefix = code.slice(0, 3).toUpperCase()
+  const hit = KNOWN[prefix]
   if (hit) {
-    return { label: prefix, railClass: hit.bg, railTextClass: hit.text };
+    return { label: prefix, railClass: hit.bg, railTextClass: hit.text }
   }
   // Hash to a stable fallback slot — same code always lands on the same colour.
-  const slot = FALLBACK_PALETTE[hashString(prefix) % FALLBACK_PALETTE.length];
-  return { label: prefix, railClass: slot.bg, railTextClass: slot.text };
+  const slot = FALLBACK_PALETTE[hashString(prefix) % FALLBACK_PALETTE.length]
+  return { label: prefix, railClass: slot.bg, railTextClass: slot.text }
 }
 
 function hashString(s: string): number {
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
-  return h;
+  let h = 5381
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0
+  return h
 }

@@ -13,4 +13,6 @@ export async function getCurrentUser() {
   return session?.user ?? null
 }
 
-export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
+export type CurrentUser = NonNullable<
+  Awaited<ReturnType<typeof getCurrentUser>>
+>

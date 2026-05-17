@@ -12,6 +12,7 @@ import {
   useTransition,
 } from "react"
 import { toast } from "sonner"
+import posthog from "posthog-js"
 
 import {
   createMyPlanAction,
@@ -244,6 +245,17 @@ export function PlannerProvider({
       }
     })
   }, [])
+
+  // Identify the user in PostHog whenever a signed-in user is present.
+  // PostHog is an external system, so this is the correct place for useEffect.
+  useEffect(() => {
+    if (currentUser) {
+      posthog.identify(currentUser.id, {
+        name: currentUser.name,
+        email: currentUser.email,
+      })
+    }
+  }, [currentUser])
 
   // Rehydrate the plan exactly once on mount. Source of truth depends
   // on auth state:
@@ -631,6 +643,11 @@ export function PlannerProvider({
       if (year === state.courseYear) return
       startCourseTransition(async () => {
         try {
+          posthog.capture("handbook_year_switched", {
+            from_year: state.courseYear,
+            to_year: year,
+            course_code: state.courseCode,
+          })
           dispatch({ type: "set_year", year })
           // Refetch the courses list so the picker reflects the year.
           const list = await listCoursesAction(null, year)

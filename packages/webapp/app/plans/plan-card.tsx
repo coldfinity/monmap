@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import posthog from "posthog-js"
 import {
   BookOpenIcon,
   ChevronRightIcon,
@@ -90,6 +91,11 @@ export function PlanCard({ data }: { data: PlanPageData }) {
   const slug = planSlug(plan.name)
 
   function handleDelete() {
+    posthog.capture("plan_deleted", {
+      course_code: course?.code,
+      total_credit_points: totalCreditPoints,
+      completion_pct: pct,
+    })
     startTransition(async () => {
       await deleteMyPlanAction(plan.id)
       router.refresh()
@@ -97,6 +103,10 @@ export function PlanCard({ data }: { data: PlanPageData }) {
   }
 
   function handleDuplicate() {
+    posthog.capture("plan_duplicated", {
+      course_code: course?.code,
+      total_credit_points: totalCreditPoints,
+    })
     startTransition(async () => {
       await duplicateMyPlanAction(plan.id)
       router.refresh()
@@ -246,6 +256,10 @@ export function PlanCard({ data }: { data: PlanPageData }) {
               <DropdownMenuContent align="start">
                 <DropdownMenuItem
                   onClick={() => {
+                    posthog.capture("plan_exported", {
+                      format: "unit_codes",
+                      course_code: course?.code,
+                    })
                     const codes = allCodesFlat(plan.state).join("\n")
                     void navigator.clipboard.writeText(codes)
                   }}
@@ -256,6 +270,10 @@ export function PlanCard({ data }: { data: PlanPageData }) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => {
+                    posthog.capture("plan_exported", {
+                      format: "csv",
+                      course_code: course?.code,
+                    })
                     const csv = buildCsv(plan.state, plan.name)
                     downloadBlob(csv, `${slug}.csv`, "text/csv")
                   }}
@@ -265,6 +283,10 @@ export function PlanCard({ data }: { data: PlanPageData }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
+                    posthog.capture("plan_exported", {
+                      format: "json",
+                      course_code: course?.code,
+                    })
                     const json = JSON.stringify(
                       { name: plan.name, state: plan.state },
                       null,

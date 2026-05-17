@@ -2,7 +2,7 @@ import type {
   RequisiteContainer,
   RequisiteLeaf,
   RequisiteRule,
-} from "./types.ts";
+} from "./types.ts"
 
 /**
  * Evaluate a requisite rule tree against a student's set of completed
@@ -26,87 +26,88 @@ import type {
  * detail-popover's job (which walks the same tree with full context).
  */
 export interface RequisiteEvalResult {
-  satisfied: boolean;
+  satisfied: boolean
   /**
    * Every unit code referenced in the tree. Stable across calls so
    * the UI can show "requires: FIT1008, MAT1830" even when satisfied.
    */
-  referencedCodes: string[];
+  referencedCodes: string[]
   /** Subset of referencedCodes the student hasn't completed. */
-  missingCodes: string[];
+  missingCodes: string[]
 }
 
 export function evaluateRequisiteTree(
   rule: RequisiteRule | null | undefined,
-  completed: ReadonlySet<string>,
+  completed: ReadonlySet<string>
 ): RequisiteEvalResult {
   if (!rule || rule.length === 0) {
-    return { satisfied: true, referencedCodes: [], missingCodes: [] };
+    return { satisfied: true, referencedCodes: [], missingCodes: [] }
   }
 
-  const referenced = new Set<string>();
-  collectReferencedCodes(rule, referenced);
+  const referenced = new Set<string>()
+  collectReferencedCodes(rule, referenced)
 
   const satisfied = rule.every((container) =>
-    evaluateContainer(container, completed),
-  );
+    evaluateContainer(container, completed)
+  )
 
   const missing = satisfied
     ? []
-    : [...referenced].filter((c) => !completed.has(c));
+    : [...referenced].filter((c) => !completed.has(c))
 
   return {
     satisfied,
     referencedCodes: [...referenced].sort(),
     missingCodes: missing.sort(),
-  };
+  }
 }
 
 function evaluateContainer(
   container: RequisiteContainer,
-  completed: ReadonlySet<string>,
+  completed: ReadonlySet<string>
 ): boolean {
-  const connector = normalizeConnector(container.parent_connector?.value);
-  const childResults: boolean[] = [];
+  const connector = normalizeConnector(container.parent_connector?.value)
+  const childResults: boolean[] = []
 
   for (const sub of container.containers ?? []) {
-    childResults.push(evaluateContainer(sub, completed));
+    childResults.push(evaluateContainer(sub, completed))
   }
   for (const leaf of container.relationships ?? []) {
-    childResults.push(evaluateLeaf(leaf, completed));
+    childResults.push(evaluateLeaf(leaf, completed))
   }
 
-  if (childResults.length === 0) return true;
+  if (childResults.length === 0) return true
 
   return connector === "OR"
     ? childResults.some(Boolean)
-    : childResults.every(Boolean);
+    : childResults.every(Boolean)
 }
 
 function evaluateLeaf(
   leaf: RequisiteLeaf,
-  completed: ReadonlySet<string>,
+  completed: ReadonlySet<string>
 ): boolean {
-  return completed.has(leaf.academic_item_code);
+  return completed.has(leaf.academic_item_code)
 }
 
 function collectReferencedCodes(
   nodes: (RequisiteContainer | RequisiteLeaf)[],
-  out: Set<string>,
+  out: Set<string>
 ): void {
   for (const node of nodes) {
     if ("academic_item_code" in node) {
-      out.add(node.academic_item_code);
-      continue;
+      out.add(node.academic_item_code)
+      continue
     }
-    if (node.containers?.length) collectReferencedCodes(node.containers, out);
-    if (node.relationships?.length) collectReferencedCodes(node.relationships, out);
+    if (node.containers?.length) collectReferencedCodes(node.containers, out)
+    if (node.relationships?.length)
+      collectReferencedCodes(node.relationships, out)
   }
 }
 
 function normalizeConnector(v: string | null | undefined): "AND" | "OR" {
-  if (!v) return "AND";
-  return v.toUpperCase() === "OR" ? "OR" : "AND";
+  if (!v) return "AND"
+  return v.toUpperCase() === "OR" ? "OR" : "AND"
 }
 
 /**
@@ -116,15 +117,13 @@ function normalizeConnector(v: string | null | undefined): "AND" | "OR" {
  */
 export function evaluateProhibition(
   rule: RequisiteRule | null | undefined,
-  takenOrPlanned: ReadonlySet<string>,
+  takenOrPlanned: ReadonlySet<string>
 ): { satisfied: boolean; conflictingCodes: string[] } {
   if (!rule || rule.length === 0) {
-    return { satisfied: true, conflictingCodes: [] };
+    return { satisfied: true, conflictingCodes: [] }
   }
-  const referenced = new Set<string>();
-  collectReferencedCodes(rule, referenced);
-  const conflicts = [...referenced]
-    .filter((c) => takenOrPlanned.has(c))
-    .sort();
-  return { satisfied: conflicts.length === 0, conflictingCodes: conflicts };
+  const referenced = new Set<string>()
+  collectReferencedCodes(rule, referenced)
+  const conflicts = [...referenced].filter((c) => takenOrPlanned.has(c)).sort()
+  return { satisfied: conflicts.length === 0, conflictingCodes: conflicts }
 }

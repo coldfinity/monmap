@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
 /**
  * Light-mode-only shell. We used to route through `next-themes` to
@@ -10,5 +10,5 @@ import * as React from "react";
  * trivial passthrough so layout.tsx's import doesn't churn.
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return <>{children}</>
 }

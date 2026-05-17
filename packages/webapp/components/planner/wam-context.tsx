@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react"
+import posthog from "posthog-js"
 
 import { migrateMyGradesAction, setMyGradeAction } from "@/app/actions"
 
@@ -123,7 +124,12 @@ export function WamProvider({
     })
   }, [signedIn, initialGrades])
 
-  const toggleWamMode = useCallback(() => setWamMode((v) => !v), [])
+  const toggleWamMode = useCallback(() => {
+    setWamMode((v) => {
+      posthog.capture("wam_mode_toggled", { enabled: !v })
+      return !v
+    })
+  }, [])
   const toggleShowGrade = useCallback(() => setShowGrade((v) => !v), [])
 
   // Per-code debounce timers so rapid keystrokes coalesce into a single

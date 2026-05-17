@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { PlusIcon } from "lucide-react"
+import posthog from "posthog-js"
 
 import {
   Dialog,
@@ -48,6 +49,7 @@ export function NewPlanButton({
     const fd = new FormData()
     if (year) fd.set("year", year)
     fd.set("name", "New plan")
+    posthog.capture("plan_created", { handbook_year: year })
     startTransition(async () => {
       await createBlankPlanAction(fd)
     })

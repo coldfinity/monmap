@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Poppins } from "next/font/google"
 
 import "./globals.css"
+import { PostHogIdentify } from "@/components/posthog-identify"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 
@@ -52,7 +53,10 @@ export default function RootLayout({
       className={cn("antialiased", "font-sans", poppins.variable)}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <PostHogIdentify />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

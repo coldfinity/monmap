@@ -1,4 +1,4 @@
-import type { PeriodKind } from "./types.ts";
+import type { PeriodKind } from "./types.ts"
 
 /**
  * Classify Monash's 40+ teaching-period strings into the handful of
@@ -12,18 +12,20 @@ import type { PeriodKind } from "./types.ts";
  * the 2-semester grid the UI renders, and rendering every variant
  * would be noise.
  */
-export function classifyTeachingPeriod(period: string | null | undefined): PeriodKind {
-  if (!period) return "OTHER";
-  const p = period.toLowerCase().trim();
+export function classifyTeachingPeriod(
+  period: string | null | undefined
+): PeriodKind {
+  if (!period) return "OTHER"
+  const p = period.toLowerCase().trim()
 
-  if (p.startsWith("first semester")) return "S1";
-  if (p.startsWith("second semester")) return "S2";
-  if (p.startsWith("summer semester a")) return "SUMMER_A";
-  if (p.startsWith("summer semester b")) return "SUMMER_B";
-  if (p.startsWith("winter semester")) return "WINTER";
-  if (p.startsWith("full year")) return "FULL_YEAR";
+  if (p.startsWith("first semester")) return "S1"
+  if (p.startsWith("second semester")) return "S2"
+  if (p.startsWith("summer semester a")) return "SUMMER_A"
+  if (p.startsWith("summer semester b")) return "SUMMER_B"
+  if (p.startsWith("winter semester")) return "WINTER"
+  if (p.startsWith("full year")) return "FULL_YEAR"
 
-  return "OTHER";
+  return "OTHER"
 }
 
 export const PERIOD_KIND_LABEL: Record<PeriodKind, string> = {
@@ -34,7 +36,7 @@ export const PERIOD_KIND_LABEL: Record<PeriodKind, string> = {
   WINTER: "Winter",
   FULL_YEAR: "Full year",
   OTHER: "Other",
-};
+}
 
 export const PERIOD_KIND_SHORT: Record<PeriodKind, string> = {
   S1: "S1",
@@ -44,12 +46,16 @@ export const PERIOD_KIND_SHORT: Record<PeriodKind, string> = {
   WINTER: "Win",
   FULL_YEAR: "Full",
   OTHER: "Other",
-};
+}
 
 /**
  * The primary slots a planner year renders by default. S1/S2 cover
  * the bulk of load for a BIT/BCS/etc. student; summer/winter are
  * accessible on demand via the "add summer" affordance.
  */
-export const PRIMARY_SLOT_KINDS: PeriodKind[] = ["S1", "S2"];
-export const OPTIONAL_SLOT_KINDS: PeriodKind[] = ["SUMMER_A", "SUMMER_B", "WINTER"];
+export const PRIMARY_SLOT_KINDS: PeriodKind[] = ["S1", "S2"]
+export const OPTIONAL_SLOT_KINDS: PeriodKind[] = [
+  "SUMMER_A",
+  "SUMMER_B",
+  "WINTER",
+]

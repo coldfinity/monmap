@@ -18,7 +18,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!expected) {
     return NextResponse.json(
       { error: "HANDBOOK_REVALIDATE_TOKEN not configured" },
-      { status: 503 },
+      { status: 503 }
     )
   }
   const provided = new URL(request.url).searchParams.get("token")

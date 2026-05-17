@@ -69,7 +69,7 @@ export function DraggableUnitRow({ code }: { code: string }) {
       <div aria-hidden className={cn("w-1.5 shrink-0", faculty.railClass)} />
 
       <div className="flex min-w-0 flex-1 items-center gap-2 py-1.5 pr-1.5 pl-2">
-        <UnitDetailPopover code={code} onOpenChange={setDetailsOpen}>
+        <UnitDetailPopover code={code} onOpenChangeAction={setDetailsOpen}>
           <button
             type="button"
             aria-label={`Details for ${code}`}

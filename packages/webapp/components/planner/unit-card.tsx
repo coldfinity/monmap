@@ -186,7 +186,7 @@ export function UnitCard({
         code={code}
         yearIndex={yearIndex}
         slotIndex={slotIndex}
-        onOpenChange={setPopoverOpen}
+        onOpenChangeAction={setPopoverOpen}
       >
         <button
           className={cn(

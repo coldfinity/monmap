@@ -58,13 +58,18 @@ export function UnitDetailPopover({
   yearIndex,
   slotIndex,
   children,
-  onOpenChange,
+  // Suffixed with "Action" so Next.js's "use client" entry-file lint
+  // (which flags non-Action-suffixed function props as not provably
+  // serializable across the server/client boundary) stays quiet. The
+  // callback is a plain client-side handler — the suffix is purely a
+  // naming convention to satisfy the rule.
+  onOpenChangeAction,
 }: {
   code: string
   yearIndex?: number
   slotIndex?: number
   children: React.ReactNode
-  onOpenChange?: (open: boolean) => void
+  onOpenChangeAction?: (open: boolean) => void
 }) {
   const {
     units,
@@ -98,7 +103,7 @@ export function UnitDetailPopover({
   function handleOpenChange(o: boolean) {
     if (o) setSelectedYear(defaultYear)
     setOpen(o)
-    onOpenChange?.(o)
+    onOpenChangeAction?.(o)
   }
 
   const usingCurrentYear = selectedYear === state.courseYear

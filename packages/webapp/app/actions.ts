@@ -6,6 +6,7 @@ import {
   createUserPlan,
   deleteUserGrade,
   deleteUserPlan,
+  duplicateUserPlan,
   expandCourseClosure,
   expandRequisiteGraph,
   fetchCourseWithAoS,
@@ -252,6 +253,18 @@ export async function deleteMyPlanAction(planId: string): Promise<SaveResult> {
   if (!u) return { ok: false, reason: "unauthenticated" }
   const ok = await deleteUserPlan(planId, u.id)
   return ok ? { ok: true } : { ok: false, reason: "not_found" }
+}
+
+export async function duplicateMyPlanAction(
+  planId: string
+): Promise<
+  | { ok: true; plan: { id: string; name: string } }
+  | { ok: false; reason: "unauthenticated" | "not_found" }
+> {
+  const u = await getCurrentUser()
+  if (!u) return { ok: false, reason: "unauthenticated" }
+  const plan = await duplicateUserPlan(planId, u.id)
+  return plan ? { ok: true, plan } : { ok: false, reason: "not_found" }
 }
 
 /**

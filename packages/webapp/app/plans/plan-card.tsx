@@ -7,6 +7,7 @@ import {
   BookOpenIcon,
   ChevronRightIcon,
   ClipboardCopyIcon,
+  CopyIcon,
   DownloadIcon,
   Trash2Icon,
 } from "lucide-react"
@@ -29,7 +30,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { deleteMyPlanAction, renameMyPlanAction } from "@/app/actions"
+import {
+  deleteMyPlanAction,
+  duplicateMyPlanAction,
+  renameMyPlanAction,
+} from "@/app/actions"
 
 import type { PlanPageData } from "./page"
 import { allCodesFlat, buildCsv, downloadBlob, planSlug } from "./plan-export"
@@ -87,6 +92,13 @@ export function PlanCard({ data }: { data: PlanPageData }) {
   function handleDelete() {
     startTransition(async () => {
       await deleteMyPlanAction(plan.id)
+      router.refresh()
+    })
+  }
+
+  function handleDuplicate() {
+    startTransition(async () => {
+      await duplicateMyPlanAction(plan.id)
       router.refresh()
     })
   }
@@ -269,6 +281,16 @@ export function PlanCard({ data }: { data: PlanPageData }) {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1.5 text-[11px]"
+              disabled={isPending}
+              onClick={handleDuplicate}
+            >
+              <CopyIcon className="size-3.5" />
+              <span className="hidden sm:inline">Duplicate</span>
+            </Button>
             <Button
               variant="ghost"
               size="sm"

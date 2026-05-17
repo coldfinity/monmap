@@ -1016,6 +1016,26 @@ export async function deleteUserPlan(
   return rows.length > 0
 }
 
+export async function duplicateUserPlan(
+  planId: string,
+  userId: string
+): Promise<{ id: string; name: string } | null> {
+  const db = getDb()
+  const [src] = await db
+    .select({ name: userPlan.name, state: userPlan.state })
+    .from(userPlan)
+    .where(and(eq(userPlan.id, planId), eq(userPlan.userId, userId)))
+    .limit(1)
+  if (!src) return null
+  const copyName = `${src.name} (copy)`.slice(0, 80)
+  const [row] = await db
+    .insert(userPlan)
+    .values({ userId, name: copyName, state: src.state })
+    .returning({ id: userPlan.id, name: userPlan.name })
+  if (!row) throw new Error("duplicateUserPlan: no row returned")
+  return row
+}
+
 /* ------------------------------------------------------------------ *
  * Per-user grades (account-global, not plan-scoped)
  * ------------------------------------------------------------------ */

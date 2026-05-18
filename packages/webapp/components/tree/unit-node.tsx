@@ -44,7 +44,7 @@ function UnitNodeInner({ data, selected }: NodeProps) {
             : "border-border",
         d.isDimmed && "opacity-40",
         d.isSeed && "ring-1 ring-primary/40",
-        d.planStatus === "completed" && "ring-1 ring-emerald-500/50",
+        d.planStatus === "completed" && "ring-1 ring-success/50",
         d.planStatus === "placed" && "ring-1 ring-primary/60"
       )}
     >
@@ -91,7 +91,7 @@ function UnitNodeInner({ data, selected }: NodeProps) {
           ) : null}
           {d.planStatus === "completed" ? (
             <CheckIcon
-              className="size-3 shrink-0 text-emerald-600 dark:text-emerald-400"
+              className="size-3 shrink-0 text-success"
               aria-label="In your plan"
             />
           ) : null}

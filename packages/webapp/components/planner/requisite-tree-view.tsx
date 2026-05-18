@@ -120,14 +120,14 @@ function LeafNode({
         "flex items-baseline gap-2 rounded-md px-2 py-1",
         good ? "text-foreground" : "text-muted-foreground",
         isProhibition && taken && "bg-destructive/10 text-destructive",
-        !isProhibition && taken && "bg-emerald-500/10"
+        !isProhibition && taken && "bg-success-soft"
       )}
     >
       <span
         className={cn(
           "mt-0.5 inline-flex size-3.5 shrink-0 items-center justify-center rounded-full border",
           good
-            ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+            ? "border-success/50 bg-success-soft text-success"
             : "border-border"
         )}
         aria-hidden

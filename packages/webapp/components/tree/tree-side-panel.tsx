@@ -113,7 +113,7 @@ export function TreeSidePanel({
           {node.planStatus === "completed" ? (
             <Badge
               variant="outline"
-              className="border-emerald-500/40 text-[10px] font-normal text-emerald-700 dark:text-emerald-400"
+              className="border-success/40 text-[10px] font-normal text-success-foreground"
             >
               In your plan
             </Badge>

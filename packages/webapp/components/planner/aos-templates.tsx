@@ -22,9 +22,9 @@ const KIND_LABEL: Record<PlannerAreaOfStudy["kind"], string> = {
 const KIND_BADGE: Record<PlannerAreaOfStudy["kind"], string> = {
   major: "bg-primary/40 text-primary-foreground",
   extended_major: "bg-primary/40 text-primary-foreground",
-  specialisation: "bg-blue-500/40 text-black",
-  minor: "bg-amber-500/40 text-black",
-  elective: "bg-emerald-500/40 text-black",
+  specialisation: "bg-info/30 text-info-foreground",
+  minor: "bg-warning/30 text-warning-foreground",
+  elective: "bg-success/30 text-success-foreground",
   other: "bg-muted text-muted-foreground",
 }
 
@@ -69,7 +69,7 @@ export function AoSTemplates({ className }: { className?: string }) {
         Templates
       </p>
       <p className="mt-1 px-1 text-[11px] leading-snug text-muted-foreground">
-        Auto-fill the planner with the degree's core units or your chosen
+        Auto-fill the planner with the degree&apos;s core units or your chosen
         specialisations.
       </p>
       <div className="mt-2 flex flex-col gap-1.5">

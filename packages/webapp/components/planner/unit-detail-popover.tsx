@@ -268,7 +268,7 @@ export function UnitDetailPopover({
               {validation.warnings.map((issue, i) => (
                 <li
                   key={`warn-${i}`}
-                  className="flex gap-2 rounded-lg bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-400"
+                  className="flex gap-2 rounded-lg bg-warning-soft px-2.5 py-1.5 text-xs text-warning-foreground"
                 >
                   <InfoIcon className="mt-0.5 size-3.5 shrink-0" />
                   <span>{issue.message}</span>

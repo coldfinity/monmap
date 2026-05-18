@@ -261,7 +261,7 @@ function ActionButton({
       <span
         className={
           tone === "good"
-            ? "text-emerald-600 dark:text-emerald-400"
+            ? "text-success"
             : tone === "bad"
               ? "text-destructive"
               : tone === "active"

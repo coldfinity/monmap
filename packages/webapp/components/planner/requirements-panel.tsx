@@ -336,7 +336,7 @@ function GroupList({
                   className={cn(
                     "rounded px-1 py-px text-[8px] font-medium tracking-wide uppercase",
                     satisfied
-                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                      ? "bg-success-soft text-success-foreground"
                       : "bg-primary/40 text-primary-foreground"
                   )}
                 >
@@ -364,7 +364,7 @@ function GroupList({
                         className={cn(
                           "inline-flex cursor-pointer items-center gap-0.5 rounded-md border px-1 py-0.5 text-[9px] tabular-nums transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
                           placed
-                            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-400"
+                            ? "border-success/40 bg-success-soft text-success-foreground hover:bg-success/20"
                             : isChoice
                               ? "border-dashed border-border text-muted-foreground"
                               : "border-border text-muted-foreground"

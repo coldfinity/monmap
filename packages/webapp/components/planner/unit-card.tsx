@@ -150,7 +150,7 @@ export function UnitCard({
         CARD_HEIGHT,
         status === "error" &&
           "border-destructive/70 ring-1 ring-destructive/25",
-        status === "warn" && "border-amber-500/70 ring-1 ring-amber-500/20",
+        status === "warn" && "border-warning/70 ring-1 ring-warning/20",
         status === "ok" && "border-border",
         status === "loading" && "border-dashed",
         isFlashing && "animate-validation-flash",
@@ -370,7 +370,7 @@ function StatusIcon({ status }: { status: CardStatus }) {
   if (status === "warn")
     return (
       <AlertTriangleIcon
-        className="size-3 text-amber-500"
+        className="size-3 text-warning"
         aria-label="has warnings"
       />
     )

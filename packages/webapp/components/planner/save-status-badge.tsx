@@ -25,14 +25,14 @@ export function SaveStatusBadge() {
   if (saveStatus === "saved") {
     return (
       <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-        <CheckIcon className="size-3.5 text-emerald-600" />
+        <CheckIcon className="size-3.5 text-success" />
         saved
       </span>
     )
   }
   if (saveStatus === "error") {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] text-amber-600">
+      <span className="inline-flex items-center gap-1 text-[11px] text-warning-foreground">
         <TriangleAlertIcon className="size-3.5" />
         save failed — will retry
       </span>

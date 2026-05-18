@@ -166,13 +166,7 @@ export function UnitCard({
         aria-hidden
         className="relative flex w-6 shrink-0 items-center justify-center"
       >
-        <div
-          className={cn(
-            "absolute inset-0",
-            faculty.railClass,
-            !isCore && "brightness-70"
-          )}
-        />
+        <div className={cn("absolute inset-0", faculty.railClass)} />
         <span
           className={cn(
             "relative rotate-180 text-[10px] font-bold tracking-widest [writing-mode:vertical-rl]",

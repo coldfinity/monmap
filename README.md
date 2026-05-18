@@ -50,9 +50,9 @@ a **Feedback** form linked in the app.
 ## Development
 
 Single Next.js app backed by a local Postgres copy of the Monash
-handbook. Handbook data ships with the repo as a packaged corpus
-(`monmap-handbook-*.tar.gz`) so you don't need credentials to spin up a
-working instance.
+handbook. The handbook data is published as a tarball on
+[GitHub Releases](https://github.com/monashcoding/monmap/releases), so
+you don't need scraper credentials to spin up a working instance.
 
 ### Prerequisites
 
@@ -74,11 +74,18 @@ cp .env.example .env
 createdb monmap
 pnpm db:migrate
 
-# 4. Unpack the handbook corpus into ./data
-tar -xzf monmap-handbook-*.tar.gz
+# 4. Download the latest handbook corpus from GitHub releases
+#    (~120 MB; covers 2020–2026). Requires the gh CLI; alternatively
+#    grab it from https://github.com/monashcoding/monmap/releases/latest
+gh release download --repo monashcoding/monmap --pattern 'monmap-handbook-*.tar.gz'
 
-# 5. Load it into Postgres (~5k units, ~500 courses, ~10k offerings)
-pnpm ingest
+# 5. Unpack into the scraper data directory
+mkdir -p packages/scraper/data
+tar -xzf monmap-handbook-*.tar.gz -C packages/scraper/data
+
+# 6. Load every year into Postgres (~37k units, ~3k courses, ~70k
+#    offerings across 7 academic years)
+pnpm ingest:all
 ```
 
 ### Running the app
@@ -97,14 +104,26 @@ pnpm db:studio                   # open drizzle-kit's db browser
 pnpm --filter webapp test        # pure-function unit tests (node --test)
 pnpm --filter webapp typecheck
 
-pnpm scrape                      # re-scrape the live handbook for one year
-pnpm scrape:all                  # …for every published year
-pnpm package                     # roll a new monmap-handbook-YYYYMMDD.tar.gz
+pnpm ingest                      # load a single year (default 2026) from ./packages/scraper/data
+pnpm ingest:all                  # load every year present in the data dir
 ```
 
 > `drizzle-kit push` is deliberately not wired up. Schema changes go
 > through `db:generate` + `db:migrate` so the history stays auditable
 > (CLAUDE.md §2).
+
+### Cutting a new handbook release (maintainers)
+
+The corpus on [GitHub Releases](https://github.com/monashcoding/monmap/releases)
+is the canonical source for everyone's local Postgres. To refresh it,
+re-scrape from CourseLoop and pack the result:
+
+```bash
+pnpm scrape:all                  # fetch every published year (slow, hours)
+pnpm package                     # roll monmap-handbook-YYYYMMDD.tar.gz
+gh release create handbook-YYYYMMDD monmap-handbook-YYYYMMDD.tar.gz \
+  --title "Handbook snapshot: YYYY-YYYY (Month YYYY)"
+```
 
 ### Project conventions and gotchas
 

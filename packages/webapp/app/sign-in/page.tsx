@@ -1,4 +1,12 @@
+import type { Metadata } from "next"
+
 import { GoogleSignInButton } from "@/components/google-sign-in-button"
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  description: "Sign in to MonMap with Google to save your course plans.",
+  robots: { index: false, follow: false },
+}
 
 export default function SignInPage() {
   return (

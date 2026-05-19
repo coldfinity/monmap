@@ -141,6 +141,36 @@ function TreeGraphInner({
     onFocus(node.id === focused ? null : node.id)
   }
 
+  // Bound the pannable area to (node bounding box) + 1 viewport of
+  // headroom. Without this you can flick the canvas and the entire
+  // graph disappears off into nowhere — disorienting on the empty
+  // state (no nodes at all) and annoying on a populated graph if you
+  // overshoot. We add ~800px of slack so users still feel like they
+  // can roam, just not infinitely.
+  const translateExtent = useMemo<[[number, number], [number, number]]>(() => {
+    const PAD = 800
+    if (rfNodes.length === 0) {
+      return [
+        [-PAD, -PAD],
+        [PAD, PAD],
+      ]
+    }
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    for (const n of rfNodes) {
+      minX = Math.min(minX, n.position.x)
+      minY = Math.min(minY, n.position.y)
+      maxX = Math.max(maxX, n.position.x + NODE_DIMS.width)
+      maxY = Math.max(maxY, n.position.y + NODE_DIMS.height)
+    }
+    return [
+      [minX - PAD, minY - PAD],
+      [maxX + PAD, maxY + PAD],
+    ]
+  }, [rfNodes])
+
   return (
     <div className="relative h-full min-h-[480px] w-full overflow-hidden rounded-2xl border bg-card shadow-card">
       <ReactFlow
@@ -157,6 +187,7 @@ function TreeGraphInner({
         fitViewOptions={{ padding: 0.18, maxZoom: 1, minZoom: 0.4 }}
         minZoom={0.25}
         maxZoom={1.5}
+        translateExtent={translateExtent}
         defaultEdgeOptions={{ type: "smoothstep" }}
       >
         <Background

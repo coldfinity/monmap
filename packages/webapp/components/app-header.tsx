@@ -58,9 +58,14 @@ export function AppHeader({ children }: { children?: React.ReactNode }) {
             </div>
           </Link>
           <div className="min-w-0">
-            <h1 className="truncate text-base leading-tight font-semibold">
+            {/* Brand bug — intentionally NOT an <h1>. Each route owns
+                its own h1 (the unit/course title on canonical pages,
+                "Start exploring" on the empty workbench, etc.) so
+                Google sees a unique main topic per URL instead of
+                "MonMap" repeated across every page. */}
+            <p className="truncate text-base leading-tight font-semibold">
               MonMap
-            </h1>
+            </p>
             <p className="hidden truncate text-[11px] text-muted-foreground sm:block">
               A course mapper by{" "}
               <a

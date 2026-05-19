@@ -3,7 +3,13 @@
 import { SlidersHorizontalIcon } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 
-import { fetchTreeDataAction, loadCourseAction } from "@/app/actions"
+import {
+  fetchEntityDetailsAction,
+  fetchTreeDataAction,
+  loadCourseAction,
+  type PublicCourseForAction,
+  type PublicUnitForAction,
+} from "@/app/actions"
 import { AppHeader } from "@/components/app-header"
 import { Button } from "@/components/ui/button"
 import {
@@ -31,6 +37,9 @@ import type { TreeEdge, TreeGraphRaw, TreeNode } from "@/lib/tree/types"
 
 import type { TreeControlsValue } from "@/lib/tree/payload"
 
+import { HandbookAttribution } from "@/components/handbook-attribution"
+
+import { EntityFacts } from "./entity-facts"
 import { TreeControls } from "./tree-controls"
 import { TreeGraph } from "./tree-graph"
 import { TreeSidePanel, type FocusedUnitDetail } from "./tree-side-panel"
@@ -60,6 +69,28 @@ export interface TreeViewProps {
   signedIn: boolean
   /** Active plan, if any — drives plan-status highlights. */
   activePlan: PlannerState | null
+  /**
+   * Curated featured units (typically level-1) shown in the empty-state
+   * facts card below the workbench. These render as real <a href>
+   * anchors so Googlebot can follow them from /tree out to the unit
+   * pages — the canonical way internal PageRank flows on the site.
+   */
+  featured?: ReadonlyArray<{
+    code: string
+    title: string
+    level: string | null
+  }>
+  /**
+   * Pre-fetched details for the seeded entity. Canonical pages
+   * (/units/[code], /courses/[code]) pass this so the overview /
+   * synopsis HTML renders on first paint; /tree leaves it undefined
+   * and the client refetches via `fetchEntityDetailsAction` if/when
+   * the user picks something.
+   */
+  initialEntityDetails?: {
+    unit: PublicUnitForAction | null
+    course: PublicCourseForAction | null
+  }
 }
 
 export function TreeView(props: TreeViewProps) {
@@ -90,8 +121,69 @@ export function TreeView(props: TreeViewProps) {
     >
   >(props.initial.enrolmentRules)
 
-  const [focused, setFocused] = useState<string | null>(null)
+  // Auto-focus the seed unit on load. Landing on /units/FIT2004 should
+  // open the side panel with FIT2004 already selected — that's the
+  // entity the user came to look at. Course mode has no single "seed"
+  // (multiple seeds from Part A + AoS), so leave focus null there.
+  const [focused, setFocused] = useState<string | null>(
+    props.initial.controls.mode === "unit"
+      ? props.initial.controls.unitCode
+      : null
+  )
   const [loading, setLoading] = useState(false)
+
+  // Below-the-workbench facts. Server-supplied for canonical pages,
+  // otherwise refetched on the client whenever the seeded entity
+  // changes (the URL-sync replaceState doesn't trigger a Next nav, so
+  // the page itself doesn't re-render — we have to ask explicitly).
+  const [entityDetails, setEntityDetails] = useState<{
+    unit: PublicUnitForAction | null
+    course: PublicCourseForAction | null
+  }>(props.initialEntityDetails ?? { unit: null, course: null })
+  useEffect(() => {
+    let cancelled = false
+    void fetchEntityDetailsAction(controls).then((d) => {
+      if (!cancelled) setEntityDetails(d)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [controls.mode, controls.unitCode, controls.courseCode, controls.year])
+
+  // When the picker swaps to a different seed unit, follow focus to
+  // the new seed so the side panel reflects what the user just picked.
+  // Course mode → no single seed → clear focus.
+  //
+  // Set-state-during-render is the React 19 idiom for "reset state on
+  // prop change" — chaining via useEffect would add an extra render
+  // and trips the set-state-in-effect lint rule. We compare against a
+  // tracked previous value so we only reset when the seed *changes*,
+  // not every render.
+  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const seedUnitCode = controls.mode === "unit" ? controls.unitCode : null
+  const [lastSeedUnitCode, setLastSeedUnitCode] = useState(seedUnitCode)
+  if (lastSeedUnitCode !== seedUnitCode) {
+    setLastSeedUnitCode(seedUnitCode)
+    setFocused(seedUnitCode)
+  }
+
+  // Keep the browser URL in sync with the picker state. /tree,
+  // /units/[code] and /courses/[code] all render the same workbench,
+  // and the canonical URL for any given (course, unit) is the entity
+  // path — so when the user picks something we replaceState into the
+  // canonical form. `replaceState` (not `pushState`) on purpose: the
+  // back button shouldn't accumulate every keystroke in the picker.
+  // We don't fire a Next navigation — local React state owns the
+  // graph data, the URL is just a bookmark of it.
+  useEffect(() => {
+    const url = canonicalUrlFor(controls)
+    if (typeof window !== "undefined" && url) {
+      const current = `${window.location.pathname}${window.location.search}`
+      if (current !== url) {
+        window.history.replaceState(null, "", url)
+      }
+    }
+  }, [controls])
 
   // Single effect: refetch the graph (and the course meta when needed)
   // whenever the controls change. Pushing all setStates into the awaited
@@ -279,17 +371,22 @@ export function TreeView(props: TreeViewProps) {
       <div className="grid flex-1 gap-3 sm:gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="hidden lg:block">{controlsNode}</div>
         <div className="relative h-[calc(100svh-9rem)] min-h-[400px] w-full min-w-0 sm:h-[calc(100svh-7rem)] sm:min-h-[520px]">
+          {/* Canvas always mounts — gives us the dot-grid background
+              and pan/zoom widgets even with nothing drawn, so the
+              empty state reads as "no nodes yet" rather than "broken
+              page". The hint card floats on top. */}
+          <TreeGraph
+            nodes={treeNodes}
+            edges={canonicalEdges}
+            focused={focused}
+            variantCounts={variantCounts}
+            onFocus={setFocused}
+          />
           {treeNodes.length === 0 ? (
-            <EmptyState mode={controls.mode} controls={controls} />
-          ) : (
-            <TreeGraph
-              nodes={treeNodes}
-              edges={canonicalEdges}
-              focused={focused}
-              variantCounts={variantCounts}
-              onFocus={setFocused}
-            />
-          )}
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-6">
+              <EmptyState mode={controls.mode} controls={controls} />
+            </div>
+          ) : null}
           {/* Desktop: detail floats over the canvas — click a node to
               open, X or click empty pane to dismiss. Mobile: lift into
               a bottom Sheet for full-width legibility. */}
@@ -335,6 +432,37 @@ export function TreeView(props: TreeViewProps) {
           ) : null}
         </SheetContent>
       </Sheet>
+
+      <EntityFacts
+        controls={controls}
+        units={units}
+        offerings={offerings}
+        edges={graph.edges}
+        course={course}
+        details={entityDetails}
+        featured={props.featured ?? []}
+        onPickAos={(c) => setControls({ ...controls, aosCode: c })}
+        onPickUnit={(c) =>
+          setControls({
+            ...controls,
+            mode: "unit",
+            unitCode: c,
+            courseCode: null,
+            aosCode: null,
+          })
+        }
+        onPickCourse={(c) =>
+          setControls({
+            ...controls,
+            mode: "course",
+            courseCode: c,
+            aosCode: null,
+            unitCode: null,
+          })
+        }
+      />
+
+      <HandbookAttribution year={controls.year} />
     </main>
   )
 }
@@ -347,7 +475,7 @@ function EmptyState({
   controls: TreeControlsValue
 }) {
   return (
-    <div className="flex h-full flex-col items-center justify-center rounded-3xl border border-dashed bg-card/40 p-8 text-center">
+    <div className="pointer-events-auto max-w-md rounded-2xl border bg-card/95 p-6 text-center shadow-card backdrop-blur-sm">
       <p className="text-sm font-medium text-foreground">
         Nothing to draw yet.
       </p>
@@ -360,6 +488,34 @@ function EmptyState({
       </p>
     </div>
   )
+}
+
+/**
+ * Map the current picker state to its canonical URL. Used by the
+ * URL-sync effect — pure function so it's trivial to reason about.
+ *
+ * Empty workbench (no course or unit picked) stays at `/tree` so a
+ * user who clears the picker doesn't end up stranded on a stale
+ * entity URL. Year is only encoded when it differs from the latest
+ * handbook to keep the URL clean for the common case.
+ */
+function canonicalUrlFor(controls: TreeControlsValue): string | null {
+  const sp = new URLSearchParams()
+  if (controls.mode === "unit") {
+    if (!controls.unitCode) return "/tree"
+    if (controls.direction !== "both") sp.set("direction", controls.direction)
+    const qs = sp.toString()
+    return `/units/${controls.unitCode}${qs ? `?${qs}` : ""}`
+  }
+  if (controls.mode === "course") {
+    if (!controls.courseCode) return "/tree"
+    if (controls.aosCode) sp.set("aos", controls.aosCode)
+    if (controls.direction !== "upstream")
+      sp.set("direction", controls.direction)
+    const qs = sp.toString()
+    return `/courses/${controls.courseCode}${qs ? `?${qs}` : ""}`
+  }
+  return null
 }
 
 function derivePeriodBadge(offerings: PlannerOffering[]): string | null {

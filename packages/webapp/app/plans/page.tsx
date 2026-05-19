@@ -1,6 +1,14 @@
+import type { Metadata } from "next"
 import { GraduationCapIcon, PlusIcon } from "lucide-react"
 
 import { AppHeader } from "@/components/app-header"
+
+export const metadata: Metadata = {
+  title: "My course maps",
+  description:
+    "Saved course plans for your Monash degree — synced across devices.",
+  robots: { index: false, follow: false },
+}
 import { GoogleSignInButton } from "@/components/google-sign-in-button"
 import { createBlankPlanAction } from "@/app/actions"
 import { getCurrentUser } from "@/lib/auth-server"

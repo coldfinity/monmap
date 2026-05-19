@@ -12,16 +12,28 @@ import type {
 } from "../planner/types.ts"
 import type { TreeDirection, TreeGraphRaw, TreeMode } from "./types.ts"
 
+/**
+ * Tree controls value. `depth` used to be user-controllable but was
+ * removed — it added a confusing knob that students rarely understood
+ * and that bloated the URL space. Server-side closure expansion is
+ * fixed at `FIXED_TREE_DEPTH` (see below).
+ */
 export interface TreeControlsValue {
   mode: TreeMode
   courseCode: string | null
   aosCode: string | null
   unitCode: string | null
   direction: TreeDirection
-  depth: number
   year: string
   useMyPlan: boolean
 }
+
+/**
+ * Default closure depth used everywhere a tree gets expanded. Deep
+ * enough to surface a 3-level prereq chain (foundation → intermediate
+ * → advanced unit), shallow enough that the layout stays readable.
+ */
+export const FIXED_TREE_DEPTH = 4
 
 export interface TreeGraphPayload {
   graph: TreeGraphRaw

@@ -54,26 +54,22 @@ export function TreeControls({
           courseCode={value.courseCode}
           aosCode={value.aosCode}
           year={value.year}
-          depth={value.depth}
           availableYears={availableYears}
           onCourseChange={(c) =>
             onChange({ ...value, courseCode: c, aosCode: null })
           }
           onAosChange={(a) => set("aosCode", a)}
           onYearChange={(y) => set("year", y)}
-          onDepthChange={(d) => set("depth", d)}
         />
       ) : (
         <UnitBlock
           unitCode={value.unitCode}
           year={value.year}
-          depth={value.depth}
           direction={value.direction}
           availableYears={availableYears}
           onUnitChange={(c) => set("unitCode", c)}
           onDirectionChange={(d) => set("direction", d)}
           onYearChange={(y) => set("year", y)}
-          onDepthChange={(d) => set("depth", d)}
         />
       )}
 

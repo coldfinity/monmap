@@ -21,7 +21,13 @@ export const PRIMARY_NAV_ITEMS: readonly PrimaryNavItem[] = [
   {
     href: "/tree",
     label: "Unit Tree",
-    match: (p: string) => p.startsWith("/tree"),
+    // /units/[code] and /courses/[code] are the same workbench under
+    // their canonical entity URLs — light up Unit Tree on those too
+    // so the nav doesn't go dark mid-session.
+    match: (p: string) =>
+      p.startsWith("/tree") ||
+      p.startsWith("/units") ||
+      p.startsWith("/courses"),
   },
 ] as const
 

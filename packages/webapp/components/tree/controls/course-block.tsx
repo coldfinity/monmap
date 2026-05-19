@@ -34,24 +34,20 @@ export function CourseBlock({
   courseCode,
   aosCode,
   year,
-  depth,
   availableYears,
   onCourseChange,
   onAosChange,
   onYearChange,
-  onDepthChange,
 }: {
   courses: PlannerCourse[]
   aosOptions: PlannerAreaOfStudy[]
   courseCode: string | null
   aosCode: string | null
   year: string
-  depth: number
   availableYears: string[]
   onCourseChange: (code: string) => void
   onAosChange: (code: string | null) => void
   onYearChange: (y: string) => void
-  onDepthChange: (d: number) => void
 }) {
   const [open, setOpen] = useState(false)
   const selectedCourse = useMemo(
@@ -143,11 +139,13 @@ export function CourseBlock({
             <SelectItem value="__all__">All majors (course core)</SelectItem>
             {aosOptions.map((a) => (
               <SelectItem key={a.code} value={a.code}>
-                <span className="flex items-center gap-2">
-                  <span className="inline-flex w-16 shrink-0 justify-start rounded bg-muted px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-muted-foreground uppercase tabular-nums">
-                    {a.kind === "major" ? "Major" : a.kind}
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="inline-flex shrink-0 items-center justify-center rounded bg-muted px-1.5 py-0.5 text-[9px] font-bold tracking-wider whitespace-nowrap text-muted-foreground uppercase tabular-nums">
+                    {shortKindLabel(a.kind)}
                   </span>
-                  <span className="text-[12px] leading-tight">{a.title}</span>
+                  <span className="min-w-0 flex-1 truncate text-[12px] leading-tight">
+                    {a.title}
+                  </span>
                 </span>
               </SelectItem>
             ))}
@@ -156,12 +154,33 @@ export function CourseBlock({
 
         <YearDepthRow
           year={year}
-          depth={depth}
           availableYears={availableYears}
           onYearChange={onYearChange}
-          onDepthChange={onDepthChange}
         />
       </div>
     </ControlSection>
   )
+}
+
+/**
+ * Compact uppercase labels for the AoS-kind badge in the major picker.
+ * Raw enum values ("specialisation", "extended_major") blow out the
+ * fixed-width badge slot — these are tuned to render at the same width
+ * once uppercased.
+ */
+function shortKindLabel(kind: string): string {
+  switch (kind) {
+    case "major":
+      return "Major"
+    case "extended_major":
+      return "Ext Maj"
+    case "specialisation":
+      return "Spec"
+    case "minor":
+      return "Minor"
+    case "elective":
+      return "Elective"
+    default:
+      return kind
+  }
 }

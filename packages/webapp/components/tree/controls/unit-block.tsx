@@ -25,23 +25,19 @@ const DIRECTIONS: Array<{ value: TreeDirection; label: string }> = [
 export function UnitBlock({
   unitCode,
   year,
-  depth,
   direction,
   availableYears,
   onUnitChange,
   onDirectionChange,
   onYearChange,
-  onDepthChange,
 }: {
   unitCode: string | null
   year: string
-  depth: number
   direction: TreeDirection
   availableYears: string[]
   onUnitChange: (code: string) => void
   onDirectionChange: (d: TreeDirection) => void
   onYearChange: (y: string) => void
-  onDepthChange: (d: number) => void
 }) {
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState("")
@@ -159,10 +155,8 @@ export function UnitBlock({
 
         <YearDepthRow
           year={year}
-          depth={depth}
           availableYears={availableYears}
           onYearChange={onYearChange}
-          onDepthChange={onDepthChange}
         />
       </div>
     </ControlSection>

@@ -1,21 +1,41 @@
+import type { Metadata } from "next"
+
 import { getCurrentUser } from "@/lib/auth-server"
 import { HANDBOOK_YEAR } from "@/lib/db/client"
+import { listAllUnits } from "@/lib/db/public-queries"
 import {
-  expandCourseClosure,
-  expandRequisiteGraph,
   fetchCourseWithAoS,
-  fetchEnrolmentRulesForCodes,
-  hydratePlannerUnits,
   listAvailableYears,
   listCoursesForPicker,
   listUserPlans,
   getUserPlanById,
 } from "@/lib/db/queries"
 import type { PlannerCourseWithAoS, PlannerState } from "@/lib/planner/types"
-import type { TreeControlsValue, TreeGraphPayload } from "@/lib/tree/payload"
+import type { TreeControlsValue } from "@/lib/tree/payload"
+import { prefetchTreeData } from "@/lib/tree/prefetch"
 import type { TreeDirection, TreeMode } from "@/lib/tree/types"
 
 import { TreeView } from "@/components/tree/tree-view"
+
+const TREE_DESCRIPTION =
+  "Explore the Monash prerequisite graph: visualise every unit your course unlocks, trace prereq chains upstream and downstream, and see which units a course's specialisation requires."
+
+export const metadata: Metadata = {
+  title: "Unit tree — prereq graph explorer",
+  description: TREE_DESCRIPTION,
+  alternates: { canonical: "/tree" },
+  openGraph: {
+    title: "Unit tree — Monash prereq graph explorer",
+    description: TREE_DESCRIPTION,
+    type: "website",
+    url: "/tree",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Unit tree — Monash prereq graph explorer",
+    description: TREE_DESCRIPTION,
+  },
+}
 
 /**
  * Server shell for `/tree`. Resolves an initial controls value from
@@ -35,7 +55,6 @@ export default async function TreePage({
     unit?: string
     direction?: string
     year?: string
-    depth?: string
     plan?: string
   }>
 }) {
@@ -69,7 +88,6 @@ export default async function TreePage({
     params.direction === "downstream" || params.direction === "both"
       ? params.direction
       : "upstream"
-  const initialDepth = clamp(parseInt(params.depth ?? "", 10) || 4, 1, 5)
   const resolvedCourse =
     initialMode === "course"
       ? (params.course ?? activePlan?.courseCode ?? null)
@@ -80,7 +98,6 @@ export default async function TreePage({
     aosCode: initialMode === "course" ? (params.aos ?? null) : null,
     unitCode: initialMode === "unit" ? (params.unit ?? null) : null,
     direction: initialDirection,
-    depth: initialDepth,
     year,
     useMyPlan: activePlan != null,
   }
@@ -97,7 +114,18 @@ export default async function TreePage({
     )
   }
 
-  const courses = await listCoursesForPicker(null, 300, year)
+  const [courses, allUnits] = await Promise.all([
+    listCoursesForPicker(null, 300, year),
+    listAllUnits(year),
+  ])
+
+  // Curated entry-level units to surface on the empty-state facts
+  // card. First 18 L1 units (sorted by code) covers FIT / MTH / ENG /
+  // BIO / CHM and gives Googlebot a fan-out of anchor links from /tree.
+  const featured = allUnits
+    .filter((u) => u.level === "1")
+    .slice(0, 18)
+    .map((u) => ({ code: u.code, title: u.title, level: u.level }))
 
   return (
     <TreeView
@@ -114,57 +142,7 @@ export default async function TreePage({
       }}
       signedIn={currentUser != null}
       activePlan={activePlan}
+      featured={featured}
     />
   )
-}
-
-function clamp(n: number, lo: number, hi: number): number {
-  return Math.max(lo, Math.min(hi, n))
-}
-
-async function prefetchTreeData(
-  controls: TreeControlsValue
-): Promise<TreeGraphPayload> {
-  const empty: TreeGraphPayload = {
-    graph: { seeds: [], nodes: [], edges: [] },
-    units: {},
-    offerings: {},
-    requisites: {},
-    enrolmentRules: {},
-  }
-  const depth = clamp(controls.depth, 1, 5)
-  const graph = await (async () => {
-    if (controls.mode === "course") {
-      if (!controls.courseCode) return empty.graph
-      return expandCourseClosure(
-        controls.courseCode,
-        controls.aosCode,
-        controls.year,
-        depth
-      )
-    }
-    if (!controls.unitCode) return empty.graph
-    return expandRequisiteGraph(
-      [controls.unitCode],
-      controls.year,
-      controls.direction,
-      depth
-    )
-  })()
-  if (graph.nodes.length === 0) return empty
-  const { units, offerings, requisites } = await hydratePlannerUnits(
-    graph.nodes,
-    controls.year
-  )
-  const enrolment = await fetchEnrolmentRulesForCodes(
-    graph.nodes,
-    controls.year
-  )
-  return {
-    graph,
-    units: Object.fromEntries(units),
-    offerings: Object.fromEntries(offerings),
-    requisites: Object.fromEntries(requisites),
-    enrolmentRules: Object.fromEntries(enrolment),
-  }
 }

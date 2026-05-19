@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google"
 import "./globals.css"
 import { PostHogIdentify } from "@/components/posthog-identify"
 import { ThemeProvider } from "@/components/theme-provider"
+import { siteUrl } from "@/lib/seo"
 import { cn } from "@/lib/utils"
 
 const poppins = Poppins({
@@ -12,32 +13,54 @@ const poppins = Poppins({
   variable: "--font-sans",
 })
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  process.env.BETTER_AUTH_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ??
-  "http://localhost:3000"
+const SITE_DESCRIPTION =
+  "Plan your Monash degree visually: drag units into semesters, check prereqs, and track WAM. Free, open-source unit and course explorer for Monash University students."
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     template: "%s · MonMap",
-    default: "MonMap — Monash course planner",
+    default: "MonMap — Monash course planner & unit explorer",
   },
-  description:
-    "Plan your Monash degree visually: drag units into semesters, check prereqs, and track WAM.",
+  description: SITE_DESCRIPTION,
+  applicationName: "MonMap",
+  keywords: [
+    "Monash",
+    "Monash University",
+    "course planner",
+    "unit planner",
+    "MonPlan",
+    "Monash handbook",
+    "prerequisites",
+    "WAM",
+    "Australia",
+  ],
+  authors: [{ name: "MonMap" }],
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "MonMap — Monash course planner",
-    description:
-      "Plan your Monash degree visually: drag units into semesters, check prereqs, and track WAM.",
+    title: "MonMap — Monash course planner & unit explorer",
+    description: SITE_DESCRIPTION,
     siteName: "MonMap",
     type: "website",
+    url: siteUrl,
+    locale: "en_AU",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MonMap — Monash course planner",
-    description:
-      "Plan your Monash degree visually: drag units into semesters, check prereqs, and track WAM.",
+    title: "MonMap — Monash course planner & unit explorer",
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 }
 
@@ -46,6 +69,34 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "MonMap",
+    alternateName: "MonMap — Monash course planner",
+    description: SITE_DESCRIPTION,
+    url: siteUrl,
+    applicationCategory: "EducationalApplication",
+    operatingSystem: "Web",
+    inLanguage: "en-AU",
+    isAccessibleForFree: true,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "AUD",
+    },
+    audience: {
+      "@type": "EducationalAudience",
+      educationalRole: "student",
+    },
+    about: {
+      "@type": "CollegeOrUniversity",
+      name: "Monash University",
+      sameAs: "https://www.monash.edu/",
+    },
+    // No sitewide SearchAction — the workbench at /tree has its own
+    // course/unit pickers and isn't a query-string search route.
+  }
   return (
     <html
       lang="en"
@@ -57,6 +108,10 @@ export default function RootLayout({
           <PostHogIdentify />
           {children}
         </ThemeProvider>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}
+        />
       </body>
     </html>
   )

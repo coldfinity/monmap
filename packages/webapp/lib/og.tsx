@@ -19,33 +19,30 @@ export const OG_CONTENT_TYPE = "image/png"
 const MONASH_YELLOW = "#ffe330"
 const MONASH_YELLOW_INK = "#1d1300"
 
-async function loadGoogleFont(family: string, weight: number) {
-  const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
-    family
-  )}:wght@${weight}`
-  const css = await fetch(cssUrl, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    },
-  }).then((r) => r.text())
-  const fontUrl = css.match(/src: url\((https:[^)]+)\) format/)?.[1]
-  if (!fontUrl) throw new Error(`Could not resolve ${family} ${weight}`)
-  return fetch(fontUrl).then((r) => r.arrayBuffer())
-}
+// Fonts are self-hosted under public/fonts (OFL Poppins, committed to
+// the repo) and read off disk. They were previously fetched from
+// fonts.googleapis.com *on every render* — an uncached `fetch()` that
+// (a) opted each OG route into dynamic rendering, so Vercel never
+// CDN-cached the generated PNGs, and (b) added 3 external round-trips
+// per card. With ~40k entity OG cards, every crawler/social unfurl
+// re-rendered + re-fetched, which was the bulk of the Fast Origin
+// Transfer blowout. Reading local bytes keeps the routes static so
+// `revalidate` on each route can cache the output. Satori wants
+// ttf/otf/woff (not woff2), hence the .ttf files.
+const FONT_DIR = join(process.cwd(), "public/fonts")
 
 export async function loadOgAssets() {
-  const [logoBytes, poppinsRegular, poppinsBold, poppinsBlack] =
+  const [logoBytes, poppinsMedium, poppinsBold, poppinsBlack] =
     await Promise.all([
       readFile(join(process.cwd(), "public/brand-logo.png")),
-      loadGoogleFont("Poppins", 500),
-      loadGoogleFont("Poppins", 700),
-      loadGoogleFont("Poppins", 900),
+      readFile(join(FONT_DIR, "Poppins-Medium.ttf")),
+      readFile(join(FONT_DIR, "Poppins-Bold.ttf")),
+      readFile(join(FONT_DIR, "Poppins-Black.ttf")),
     ])
   return {
     logoDataUrl: `data:image/png;base64,${logoBytes.toString("base64")}`,
     fonts: [
-      { name: "Poppins", data: poppinsRegular, weight: 500, style: "normal" },
+      { name: "Poppins", data: poppinsMedium, weight: 500, style: "normal" },
       { name: "Poppins", data: poppinsBold, weight: 700, style: "normal" },
       { name: "Poppins", data: poppinsBlack, weight: 900, style: "normal" },
     ] as const,

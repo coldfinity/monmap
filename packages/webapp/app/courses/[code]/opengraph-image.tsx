@@ -6,6 +6,19 @@ import { loadOgAssets, OG_CONTENT_TYPE, OG_SIZE, OgShell } from "@/lib/og"
 export const alt = "MonMap — course map"
 export const size = OG_SIZE
 export const contentType = OG_CONTENT_TYPE
+// Cache each generated card on the CDN for 24h (mirrors the page's ISR
+// window). Combined with self-hosted fonts (see lib/og.tsx), this keeps
+// the route static so crawler/social re-hits serve the cached PNG
+// instead of re-rendering on the origin.
+export const revalidate = 86400
+
+// Lazy ISR, same policy as the matching /courses/[code] page: returning
+// [] prebuilds nothing but the empty `generateStaticParams` export is
+// what flips Next from on-demand dynamic (ƒ) to cached-on-first-hit ISR
+// (●). Without it the card re-renders on the origin every request.
+export function generateStaticParams() {
+  return []
+}
 
 /**
  * Per-course OG card. Same shell as the unit variant — the headline

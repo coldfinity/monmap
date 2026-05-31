@@ -12,10 +12,6 @@ config({ path: resolve(here, "../../.env") })
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Let pages that touch DB data silently flip to dynamic rendering.
-  experimental: {
-    // no-op placeholder; keeps the block available for future tuning
-  },
   async rewrites() {
     return [
       {

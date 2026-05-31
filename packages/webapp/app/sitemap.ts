@@ -7,6 +7,12 @@ import {
 } from "@/lib/db/public-queries"
 import { absoluteUrl } from "@/lib/seo"
 
+// The underlying queries are `handbook`-tagged (24h), but pin the route
+// itself too so the ~40k-entry XML is cached and served from the edge
+// rather than re-serialised on every bot fetch. Busts with the handbook
+// tag on re-ingest, same as the pages.
+export const revalidate = 86400
+
 /**
  * Sitemap covers everything we want indexed:
  *   - home (planner landing)

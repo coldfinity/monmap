@@ -12,9 +12,11 @@ import { absoluteUrl, siteUrl } from "@/lib/seo"
 
 // Lazy ISR: don't pre-render every unit at build (5k+ pages would
 // add ~90s to the build). First request per code renders + caches;
-// subsequent hits serve the cached HTML for 24 h, or until the ingest
-// CLI busts the `handbook` cache tag explicitly.
-export const revalidate = 86400
+// subsequent hits serve the cached HTML until the ingest CLI busts
+// the `handbook` cache tag via /api/revalidate-handbook.
+// 7-day TTL is a safety net only — tag invalidation is the primary
+// mechanism. Using 24h caused ~1k ISR writes/day just from expiry churn.
+export const revalidate = 604800
 export const dynamicParams = true
 
 export async function generateStaticParams() {

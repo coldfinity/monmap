@@ -25,6 +25,6 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (provided !== expected) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   }
-  revalidateTag("handbook", "default")
+  revalidateTag("handbook")
   return NextResponse.json({ revalidated: true, tag: "handbook" })
 }

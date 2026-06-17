@@ -6,11 +6,12 @@ import { loadOgAssets, OG_CONTENT_TYPE, OG_SIZE, OgShell } from "@/lib/og"
 export const alt = "MonMap — unit prereq map"
 export const size = OG_SIZE
 export const contentType = OG_CONTENT_TYPE
-// Cache each generated card on the CDN for 24h (mirrors the page's ISR
-// window). Combined with self-hosted fonts (see lib/og.tsx), this keeps
-// the route static so crawler/social re-hits serve the cached PNG
-// instead of re-rendering on the origin.
-export const revalidate = 86400
+// Cache each generated card on the CDN for 7 days (mirrors the page's
+// ISR window). Combined with self-hosted fonts (see lib/og.tsx), this
+// keeps the route static so crawler/social re-hits serve the cached PNG
+// instead of re-rendering on the origin. Tag-based invalidation via
+// /api/revalidate-handbook is the primary freshness mechanism.
+export const revalidate = 604800
 
 // Lazy ISR, same policy as the matching /units/[code] page: returning
 // [] prebuilds nothing (avoids 40k build-time renders) but the empty

@@ -15,8 +15,10 @@ import type { TreeDirection } from "@/lib/tree/types"
 import { absoluteUrl, siteUrl } from "@/lib/seo"
 
 // Lazy ISR: see /units/[code] for the rationale. Same policy here —
-// ~500 course pages cached for 24 h, busted via the `handbook` tag.
-export const revalidate = 86400
+// ~500 course pages cached for 7 days, busted via the `handbook` tag.
+// 24h caused excessive ISR write churn; tag invalidation is the primary
+// freshness mechanism when ingest runs.
+export const revalidate = 604800
 export const dynamicParams = true
 
 export async function generateStaticParams() {
